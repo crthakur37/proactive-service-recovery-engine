@@ -66,6 +66,10 @@ Core factors:
 
 The score is scaled to 0–100.
 
+V1 uses explicit scenario cutoffs: Low is at most 35, Medium is above 35 through
+55, and High is above 55. These are synthetic triage thresholds chosen to keep
+all three bands observable; they are not learned or production-calibrated.
+
 This is a **decision-prioritization score**, not a psychological score and not a causal model.
 
 ## 7. Recovery Policy
@@ -90,6 +94,8 @@ The app compares:
 
 ### Policy A — Standard / Reactive
 Recovery begins after escalation and uses a relatively uniform response.
+Only orders with a support attempt receive the assumed reactive intervention
+effect or incur its recovery cost.
 
 ### Policy B — Risk-Aware / Proactive
 Recovery resources are allocated based on the Service Recovery Risk Score.

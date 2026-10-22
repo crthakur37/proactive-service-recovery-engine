@@ -15,6 +15,9 @@ def _sigmoid(x: np.ndarray) -> np.ndarray:
 
 
 def generate_orders(n: int = 5000, seed: int = 42) -> pd.DataFrame:
+    if not isinstance(n, int) or isinstance(n, bool) or n <= 0:
+        raise ValueError("n must be a positive integer")
+
     rng = np.random.default_rng(seed)
 
     order_id = np.arange(1, n + 1)

@@ -1,6 +1,4 @@
-streamlit
-pandas
-numpy
-scikit-learn
-plotly
-matplotlib
+streamlit>=1.52,<2
+pandas>=2.2,<4
+numpy>=2,<3
+plotly>=6,<8

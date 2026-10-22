@@ -171,9 +171,8 @@ Synthetic assumptions will be documented explicitly. The prototype does not clai
 
 - Python
 - pandas
-- scikit-learn
 - Streamlit
-- Plotly / Matplotlib
+- Plotly
 - Git / GitHub
 
 Additional libraries will be added only if the V1 genuinely requires them.
@@ -197,19 +196,33 @@ Additional libraries will be added only if the V1 genuinely requires them.
 
 ## Current Status
 
-**V1 scope frozen. Implementation starting.**
+**V1 implemented and locally validated with synthetic data.**
+
+## Run Locally
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -r requirements.txt
+.\.venv\Scripts\python.exe -m streamlit run app.py
+```
+
+Run the lightweight automated checks with:
+
+```powershell
+.\.venv\Scripts\python.exe -m unittest discover -s tests -v
+```
+
+The score bands are scenario thresholds, not learned cutoffs: Low is at most 35,
+Medium is above 35 through 55, and High is above 55. They are calibrated to make
+all three queues observable in the synthetic dataset while keeping High risk a
+deliberately selective escalation group.
 
 ## Next Steps
 
-1. Define synthetic-data schema and assumptions
-2. Generate synthetic customer/order records
-3. Build service-risk scoring logic
-4. Define recovery-policy rules
-5. Simulate standard vs. proactive recovery
-6. Build Streamlit dashboard
-7. Test edge cases
-8. Deploy V1
-9. Add screenshots, architecture visual, results, and verified references
+1. Validate assumptions with real or pilot data before operational use
+2. Sensitivity-test score weights, thresholds, and intervention economics
+3. Deploy the V1 portfolio demo
+4. Add screenshots, architecture visual, results, and verified references
 
 ## Disclaimer
 

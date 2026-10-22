@@ -70,7 +70,7 @@ with left:
         y="Orders",
         title="Service Recovery Risk Distribution",
     )
-    st.plotly_chart(fig_risk, use_container_width=True)
+    st.plotly_chart(fig_risk, width="stretch")
 
 with right:
     policy_view = summary.melt(
@@ -87,7 +87,7 @@ with right:
         barmode="group",
         title="Illustrative Policy Economics",
     )
-    st.plotly_chart(fig_policy, use_container_width=True)
+    st.plotly_chart(fig_policy, width="stretch")
 
 st.subheader("2. Inspect an Order")
 
@@ -112,6 +112,7 @@ st.write(
 st.write(f"**Recommended support route:** {row['support_route']}")
 st.write(f"**Recommended recovery action:** {row['recovery_action']}")
 st.write(f"**Illustrative recovery cost:** ₹{row['recovery_cost']:,.0f}")
+st.write(f"**Estimated customer value at risk:** ₹{row['estimated_value_at_risk']:,.0f}")
 
 with st.expander("Why was this order prioritized this way?"):
     explain_df = pd.DataFrame(
@@ -136,7 +137,7 @@ with st.expander("Why was this order prioritized this way?"):
             ],
         }
     )
-    st.dataframe(explain_df, use_container_width=True, hide_index=True)
+    st.dataframe(explain_df, width="stretch", hide_index=True)
     st.caption(
         "V1 uses a transparent weighted decision score. ATI measures monitoring intensity only; "
         "it is not interpreted as anger or anxiety."
@@ -146,7 +147,13 @@ st.subheader("3. Policy Comparison")
 display_summary = summary.copy()
 for col in ["Recovery Spend", "Expected Value Preserved", "Net Retention Value"]:
     display_summary[col] = display_summary[col].map(lambda x: f"₹{x:,.0f}")
-st.dataframe(display_summary, use_container_width=True, hide_index=True)
+display_summary["Expected Churn Events Avoided"] = display_summary[
+    "Expected Churn Events Avoided"
+].map(lambda x: f"{x:,.1f}")
+display_summary["Cost per Expected Churn Avoided"] = display_summary[
+    "Cost per Expected Churn Avoided"
+].map(lambda x: f"₹{x:,.0f}")
+st.dataframe(display_summary, width="stretch", hide_index=True)
 
 st.subheader("4. High-Priority Queue")
 queue_cols = [
@@ -165,7 +172,7 @@ queue = detail.sort_values(
     ["service_recovery_risk_score", "predicted_delay_min"],
     ascending=False,
 )[queue_cols].head(25)
-st.dataframe(queue, use_container_width=True, hide_index=True)
+st.dataframe(queue, width="stretch", hide_index=True)
 
 with st.expander("V1 assumptions and limitations"):
     st.markdown(

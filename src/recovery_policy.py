@@ -5,44 +5,43 @@ Customer value affects recovery intensity, not physical delivery priority.
 
 from __future__ import annotations
 
+import numpy as np
 import pandas as pd
+
+from src.scoring import LOW_RISK_MAX, MEDIUM_RISK_MAX
 
 
 def apply_recovery_policy(df: pd.DataFrame) -> pd.DataFrame:
+    required = {"service_recovery_risk_score", "predicted_delay_min"}
+    missing = required.difference(df.columns)
+    if missing:
+        raise ValueError(f"Missing policy columns: {', '.join(sorted(missing))}")
+    if df[list(required)].isna().any().any():
+        raise ValueError("Policy inputs must not contain missing values")
+
     out = df.copy()
+    score = out["service_recovery_risk_score"]
+    delay = out["predicted_delay_min"]
+    is_low = score <= LOW_RISK_MAX
+    is_medium = (score > LOW_RISK_MAX) & (score <= MEDIUM_RISK_MAX)
 
-    def decide(row):
-        score = row["service_recovery_risk_score"]
-        delay = row["predicted_delay_min"]
+    out["support_route"] = np.select(
+        [is_low, is_medium],
+        ["Automated support", "Proactive automated outreach"],
+        default="Priority human escalation",
+    )
+    out["recovery_action"] = np.select(
+        [is_low, is_medium],
+        ["Standard flow", "Apology + fee waiver / nominal credit"],
+        default="Priority support + higher compensation review",
+    )
+    out["recovery_cost"] = np.select(
+        [is_low, is_medium],
+        [0.0, np.where(delay < 20, 30.0, 50.0)],
+        default=np.where(delay < 25, 100.0, 150.0),
+    ).astype(float)
+    out["assumed_churn_reduction"] = np.select(
+        [is_low, is_medium], [0.0, 0.08], default=0.18
+    ).astype(float)
 
-        if score <= 40:
-            return pd.Series(
-                ["Automated support", "Standard flow", 0.0, 0.00],
-                index=["support_route", "recovery_action", "recovery_cost", "assumed_churn_reduction"],
-            )
-
-        if score <= 75:
-            cost = 30.0 if delay < 20 else 50.0
-            return pd.Series(
-                [
-                    "Proactive automated outreach",
-                    "Apology + fee waiver / nominal credit",
-                    cost,
-                    0.08,
-                ],
-                index=["support_route", "recovery_action", "recovery_cost", "assumed_churn_reduction"],
-            )
-
-        cost = 100.0 if delay < 25 else 150.0
-        return pd.Series(
-            [
-                "Priority human escalation",
-                "Priority support + higher compensation review",
-                cost,
-                0.18,
-            ],
-            index=["support_route", "recovery_action", "recovery_cost", "assumed_churn_reduction"],
-        )
-
-    policy = out.apply(decide, axis=1)
-    return pd.concat([out, policy], axis=1)
+    return out
